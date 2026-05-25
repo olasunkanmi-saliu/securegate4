@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { padToMinDuration } from "@/lib/auth-timing";
 import { db } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
@@ -13,6 +14,7 @@ const GENERIC_OK_MESSAGE =
   "If your account requires verification, a new link has been sent.";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  const startedAt = Date.now();
   try {
     const body = await request.json();
 
@@ -58,12 +60,14 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       await sendVerificationEmail(email, user.name, rawToken);
     }
 
+    await padToMinDuration(startedAt);
     return NextResponse.json(
       { success: true, message: GENERIC_OK_MESSAGE },
       { status: 200 }
     );
   } catch (error) {
     console.error("[VERIFY_RESEND]", error);
+    await padToMinDuration(startedAt);
     return NextResponse.json(
       { success: true, message: GENERIC_OK_MESSAGE },
       { status: 200 }
