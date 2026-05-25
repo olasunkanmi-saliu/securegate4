@@ -34,5 +34,10 @@ export const signinSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+export const resendVerifySchema = z.object({
+  email: emailSchema,
+});
+
 export type SignupInput = z.infer<typeof signupSchema>;
 export type SigninInput = z.infer<typeof signinSchema>;
+export type ResendVerifyInput = z.infer<typeof resendVerifySchema>;

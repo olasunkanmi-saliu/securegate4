@@ -2,12 +2,15 @@ import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
 import { db } from "@/lib/db";
+import { sendVerificationEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { generateToken, hashToken } from "@/lib/tokens";
 import { signupSchema } from "@/lib/validations";
 
 import type { NextRequest } from "next/server";
 
 const BCRYPT_ROUNDS = 12;
+const VERIFICATION_TTL_MS = 15 * 60 * 1000;
 const GENERIC_SERVER_ERROR = "Something went wrong. Please try again.";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -49,13 +52,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     const hashedPassword = await hash(password, BCRYPT_ROUNDS);
 
-    await db.user.create({
+    const user = await db.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
       },
     });
+
+    await db.verificationToken.deleteMany({ where: { identifier: email } });
+
+    const rawToken = generateToken();
+    await db.verificationToken.create({
+      data: {
+        identifier: email,
+        token: hashToken(rawToken),
+        expires: new Date(Date.now() + VERIFICATION_TTL_MS),
+      },
+    });
+
+    await sendVerificationEmail(email, user.name, rawToken);
 
     return NextResponse.json(
       {
