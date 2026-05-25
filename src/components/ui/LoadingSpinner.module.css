@@ -1,0 +1,32 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.centered {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-xl) 0;
+}
+
+.spinner {
+  display: inline-block;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: var(--radius-full);
+  animation: lspin 0.6s linear infinite;
+  color: var(--color-primary);
+}
+
+.label {
+  font-family: var(--font-text-sm-regular-family);
+  font-size: var(--font-text-sm-regular-size);
+  color: var(--color-on-surface-variant);
+}
+
+@keyframes lspin {
+  to {
+    transform: rotate(360deg);
+  }
+}

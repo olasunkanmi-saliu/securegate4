@@ -1,79 +1,98 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+
+import { Alert } from "@/components/ui/Alert";
+import { FormInput } from "@/components/ui/FormInput";
+import { SubmitButton } from "@/components/ui/SubmitButton";
+import { forgotPasswordSchema } from "@/lib/validations";
 
 import styles from "./ForgotPasswordForm.module.css";
 
+const GENERIC_OK =
+  "If an account exists, a reset link has been sent.";
+
 export function ForgotPasswordForm(): JSX.Element {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
-    "idle"
-  );
-  const [message, setMessage] = useState("");
+  const [fieldError, setFieldError] = useState<string | undefined>(undefined);
+  const [serverError, setServerError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
+  function validate(): void {
+    const result = forgotPasswordSchema.safeParse({ email });
+    if (!result.success) {
+      setFieldError(result.error.flatten().fieldErrors.email?.[0]);
+    } else {
+      setFieldError(undefined);
+    }
+  }
+
+  async function handleSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
-    setStatus("loading");
-    setMessage("");
+    setServerError("");
+    setSuccess("");
+
+    const result = forgotPasswordSchema.safeParse({ email });
+    if (!result.success) {
+      setFieldError(result.error.flatten().fieldErrors.email?.[0]);
+      return;
+    }
+
+    setFieldError(undefined);
+    setLoading(true);
 
     try {
       const res = await fetch("/api/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(result.data),
       });
 
       if (res.status === 429) {
-        setStatus("error");
-        setMessage("Too many attempts. Please try again later.");
+        setServerError("Too many attempts. Please try again later.");
         return;
       }
 
-      setStatus("done");
-      setMessage("If an account exists, a reset link has been sent.");
+      setSuccess(GENERIC_OK);
     } catch {
-      setStatus("error");
-      setMessage("Something went wrong. Please try again.");
+      setServerError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  if (status === "done") {
-    return (
-      <p className={styles.confirmation} role="status">
-        {message}
-      </p>
-    );
-  }
-
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <label htmlFor="forgot-email" className={styles.label}>
-        Email address
-      </label>
-      <input
+    <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      {serverError && <Alert variant="error" message={serverError} />}
+      {success && <Alert variant="success" message={success} />}
+
+      <FormInput
         id="forgot-email"
+        label="Email address"
         type="email"
-        className={styles.input}
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
-        required
+        error={fieldError}
+        disabled={loading || !!success}
         autoComplete="email"
-        disabled={status === "loading"}
+        onChange={setEmail}
+        onBlur={validate}
       />
-      <button
-        type="submit"
-        className={styles.button}
-        disabled={status === "loading" || email.length === 0}
-        aria-busy={status === "loading"}
-      >
-        {status === "loading" ? "Sending..." : "Send reset link"}
-      </button>
-      {status === "error" && (
-        <p className={styles.error} role="alert" aria-live="polite">
-          {message}
-        </p>
-      )}
+
+      <SubmitButton
+        label="Send reset link"
+        loadingLabel="Sending..."
+        loading={loading}
+        disabled={!!success}
+      />
+
+      <p className={styles.footer}>
+        Remembered it?{" "}
+        <Link className={styles.footerLink} href="/login">
+          Back to sign in
+        </Link>
+      </p>
     </form>
   );
 }

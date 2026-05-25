@@ -1,12 +1,15 @@
-import styles from "./page.module.css";
+import { Suspense } from "react";
+
+import { AuthCard } from "@/components/ui/AuthCard";
+
+import { LoginForm } from "./LoginForm";
 
 export default function LoginPage(): JSX.Element {
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>Sign in</h1>
-      <p className={styles.tagline}>
-        Login form lands here in Phase 6. Authentication API is live.
-      </p>
-    </main>
+    <AuthCard title="Sign in" subtitle="Welcome back to SecureGate.">
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
+    </AuthCard>
   );
 }

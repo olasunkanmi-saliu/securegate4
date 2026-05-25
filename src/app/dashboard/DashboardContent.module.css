@@ -1,0 +1,93 @@
+.main {
+  min-height: 100vh;
+  background: var(--color-background);
+  color: var(--color-on-background);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-xl);
+  background: var(--nav-bg);
+  border-bottom: 1px solid var(--card-border);
+}
+
+.logo {
+  font-family: var(--font-text-lg-semibold-family);
+  font-size: var(--font-text-lg-semibold-size);
+  font-weight: var(--font-text-lg-semibold-weight);
+  color: var(--nav-text);
+  letter-spacing: 0.02em;
+}
+
+.signOut {
+  min-height: 44px;
+  padding: var(--space-xs) var(--space-md);
+  background: none;
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-md);
+  color: var(--nav-text);
+  font-family: var(--font-text-sm-semibold-family);
+  font-size: var(--font-text-sm-semibold-size);
+  font-weight: var(--font-text-sm-semibold-weight);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.signOut:hover:not(:disabled) {
+  background: var(--card-bg);
+}
+
+.signOut:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
+
+.signOut:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.card {
+  max-width: 56rem;
+  margin: var(--space-2xl) auto;
+  padding: var(--space-2xl);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display-xs-bold-family);
+  font-size: var(--font-display-xs-bold-size);
+  font-weight: var(--font-display-xs-bold-weight);
+  line-height: var(--font-display-xs-bold-line-height);
+  color: var(--color-primary);
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-text-md-regular-family);
+  font-size: var(--font-text-md-regular-size);
+  line-height: var(--font-text-md-regular-line-height);
+  color: var(--color-on-surface-variant);
+}
+
+.email {
+  font-weight: var(--font-text-md-semibold-weight);
+  color: var(--color-on-surface);
+}
+
+.body {
+  margin: 0;
+  font-family: var(--font-text-md-regular-family);
+  font-size: var(--font-text-md-regular-size);
+  line-height: var(--font-text-md-regular-line-height);
+  color: var(--color-on-surface);
+}

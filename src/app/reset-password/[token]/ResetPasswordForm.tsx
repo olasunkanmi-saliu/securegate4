@@ -3,27 +3,43 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Alert } from "@/components/ui/Alert";
+import { PasswordInput } from "@/components/ui/PasswordInput";
+import { PasswordStrength } from "@/components/ui/PasswordStrength";
+import { SubmitButton } from "@/components/ui/SubmitButton";
+import { passwordSchema } from "@/lib/validations";
+
 import styles from "./ResetPasswordForm.module.css";
 
 interface ResetPasswordFormProps {
   token: string;
 }
 
-interface FieldErrors {
-  password?: string;
-}
-
-export function ResetPasswordForm({ token }: ResetPasswordFormProps): JSX.Element {
+export function ResetPasswordForm({
+  token,
+}: ResetPasswordFormProps): JSX.Element {
   const router = useRouter();
   const [password, setPassword] = useState("");
-  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [fieldError, setFieldError] = useState<string | undefined>(undefined);
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
+  function validate(): void {
+    const result = passwordSchema.safeParse(password);
+    setFieldError(result.success ? undefined : result.error.issues[0]?.message);
+  }
+
+  async function handleSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     setServerError("");
-    setFieldErrors({});
+
+    const result = passwordSchema.safeParse(password);
+    if (!result.success) {
+      setFieldError(result.error.issues[0]?.message);
+      return;
+    }
+
+    setFieldError(undefined);
     setLoading(true);
 
     try {
@@ -34,9 +50,9 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps): JSX.Elemen
       });
 
       if (res.status === 400) {
-        const data = await res.json();
-        if (data?.fieldErrors?.password?.[0]) {
-          setFieldErrors({ password: data.fieldErrors.password[0] });
+        const data: { fieldErrors?: { password?: string[] } } = await res.json();
+        if (data.fieldErrors?.password?.[0]) {
+          setFieldError(data.fieldErrors.password[0]);
         } else {
           router.push("/forgot-password?expired=1");
         }
@@ -57,46 +73,28 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps): JSX.Elemen
   }
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <label htmlFor="new-password" className={styles.label}>
-        New password
-      </label>
-      <input
+    <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      {serverError && <Alert variant="error" message={serverError} />}
+
+      <PasswordInput
         id="new-password"
-        type="password"
-        className={styles.input}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        label="New password"
         placeholder="Enter a strong password"
-        required
-        autoComplete="new-password"
+        value={password}
+        error={fieldError}
         disabled={loading}
-        aria-invalid={!!fieldErrors.password}
-        aria-describedby={fieldErrors.password ? "new-password-error" : undefined}
+        autoComplete="new-password"
+        onChange={setPassword}
+        onBlur={validate}
       />
-      {fieldErrors.password && (
-        <p
-          id="new-password-error"
-          className={styles.error}
-          role="alert"
-          aria-live="polite"
-        >
-          {fieldErrors.password}
-        </p>
-      )}
-      <button
-        type="submit"
-        className={styles.button}
-        disabled={loading || password.length === 0}
-        aria-busy={loading}
-      >
-        {loading ? "Updating..." : "Update password"}
-      </button>
-      {serverError && (
-        <p className={styles.error} role="alert" aria-live="polite">
-          {serverError}
-        </p>
-      )}
+
+      <PasswordStrength password={password} />
+
+      <SubmitButton
+        label="Update password"
+        loadingLabel="Updating..."
+        loading={loading}
+      />
     </form>
   );
 }

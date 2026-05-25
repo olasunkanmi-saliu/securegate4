@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 
+import { AuthCard } from "@/components/ui/AuthCard";
 import { db } from "@/lib/db";
 import { hashToken } from "@/lib/tokens";
 
 import { ResetPasswordForm } from "./ResetPasswordForm";
-import styles from "./page.module.css";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,12 +25,11 @@ export default async function ResetPasswordPage({
   }
 
   return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>Reset your password</h1>
-      <p className={styles.tagline}>
-        Choose a new password to finish signing back in.
-      </p>
+    <AuthCard
+      title="Reset your password"
+      subtitle="Choose a new password to finish signing back in."
+    >
       <ResetPasswordForm token={params.token} />
-    </main>
+    </AuthCard>
   );
 }

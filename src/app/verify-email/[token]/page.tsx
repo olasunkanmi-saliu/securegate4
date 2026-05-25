@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { Alert } from "@/components/ui/Alert";
+import { AuthCard } from "@/components/ui/AuthCard";
 import { db } from "@/lib/db";
 import { hashToken } from "@/lib/tokens";
 
@@ -16,25 +18,21 @@ interface VerifyEmailPageProps {
 export default async function VerifyEmailPage({
   params,
 }: VerifyEmailPageProps): Promise<JSX.Element> {
-  const incomingToken = params.token;
-  const hashed = hashToken(incomingToken);
-
   const record = await db.verificationToken.findUnique({
-    where: { token: hashed },
+    where: { token: hashToken(params.token) },
   });
 
   if (!record || record.expires < new Date()) {
     return (
-      <main className={styles.main}>
-        <h1 className={styles.title}>Link expired</h1>
-        <p className={styles.tagline}>
-          This verification link is no longer valid. Request a new one to
-          continue.
-        </p>
+      <AuthCard title="Link expired" subtitle="This verification link is no longer valid.">
+        <Alert
+          variant="warning"
+          message="Request a new verification link to continue."
+        />
         <Link href="/verify-email/please-verify" className={styles.link}>
           Request a new link
         </Link>
-      </main>
+      </AuthCard>
     );
   }
 

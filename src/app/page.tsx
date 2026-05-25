@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import styles from "./page.module.css";
 
 export default function HomePage(): JSX.Element {
@@ -7,6 +9,14 @@ export default function HomePage(): JSX.Element {
       <p className={styles.tagline}>
         Production-grade authentication and identity security.
       </p>
+      <div className={styles.actions}>
+        <Link href="/login" className={styles.primary}>
+          Sign in
+        </Link>
+        <Link href="/signup" className={styles.secondary}>
+          Create account
+        </Link>
+      </div>
     </main>
   );
 }

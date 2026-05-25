@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 
-import styles from "./page.module.css";
+import { DashboardContent } from "./DashboardContent";
 
 export const dynamic = "force-dynamic";
 
@@ -16,17 +16,12 @@ export default async function DashboardPage(): Promise<JSX.Element> {
 
   const user = await db.user.findUnique({
     where: { email: session.user.email },
-    select: { name: true, emailVerified: true },
+    select: { name: true, email: true, emailVerified: true },
   });
 
   if (!user || !user.emailVerified) {
     redirect("/verify-email/please-verify");
   }
 
-  return (
-    <main className={styles.main}>
-      <h1 className={styles.title}>Dashboard</h1>
-      <p className={styles.tagline}>Welcome back, {user.name}.</p>
-    </main>
-  );
+  return <DashboardContent userName={user.name} userEmail={user.email} />;
 }

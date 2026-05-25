@@ -2,80 +2,87 @@
 
 import { useState } from "react";
 
+import { Alert } from "@/components/ui/Alert";
+import { FormInput } from "@/components/ui/FormInput";
+import { SubmitButton } from "@/components/ui/SubmitButton";
+import { resendVerifySchema } from "@/lib/validations";
+
 import styles from "./ResendForm.module.css";
+
+const GENERIC_OK =
+  "If your account requires verification, a new link has been sent.";
 
 export function ResendForm(): JSX.Element {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "done" | "error">(
-    "idle"
-  );
-  const [message, setMessage] = useState("");
+  const [fieldError, setFieldError] = useState<string | undefined>(undefined);
+  const [serverError, setServerError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>): Promise<void> {
+  function validate(): void {
+    const result = resendVerifySchema.safeParse({ email });
+    setFieldError(
+      result.success ? undefined : result.error.flatten().fieldErrors.email?.[0]
+    );
+  }
+
+  async function handleSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
-    setStatus("loading");
-    setMessage("");
+    setServerError("");
+    setSuccess("");
+
+    const result = resendVerifySchema.safeParse({ email });
+    if (!result.success) {
+      setFieldError(result.error.flatten().fieldErrors.email?.[0]);
+      return;
+    }
+
+    setFieldError(undefined);
+    setLoading(true);
 
     try {
       const res = await fetch("/api/verify-email/resend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify(result.data),
       });
 
       if (res.status === 429) {
-        setStatus("error");
-        setMessage("Too many attempts. Please try again later.");
+        setServerError("Too many attempts. Please try again later.");
         return;
       }
 
-      setStatus("done");
-      setMessage(
-        "If your account requires verification, a new link has been sent."
-      );
+      setSuccess(GENERIC_OK);
     } catch {
-      setStatus("error");
-      setMessage("Something went wrong. Please try again.");
+      setServerError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   }
 
-  if (status === "done") {
-    return (
-      <p className={styles.confirmation} role="status">
-        {message}
-      </p>
-    );
-  }
-
   return (
-    <form className={styles.form} onSubmit={handleSubmit} noValidate>
-      <label htmlFor="resend-email" className={styles.label}>
-        Email address
-      </label>
-      <input
+    <form onSubmit={handleSubmit} className={styles.form} noValidate>
+      {serverError && <Alert variant="error" message={serverError} />}
+      {success && <Alert variant="success" message={success} />}
+
+      <FormInput
         id="resend-email"
+        label="Email address"
         type="email"
-        className={styles.input}
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="you@example.com"
-        required
+        error={fieldError}
+        disabled={loading || !!success}
         autoComplete="email"
-        disabled={status === "loading"}
+        onChange={setEmail}
+        onBlur={validate}
       />
-      <button
-        type="submit"
-        className={styles.button}
-        disabled={status === "loading" || email.length === 0}
-        aria-busy={status === "loading"}
-      >
-        {status === "loading" ? "Sending..." : "Resend verification link"}
-      </button>
-      {status === "error" && (
-        <p className={styles.error} role="alert" aria-live="polite">
-          {message}
-        </p>
-      )}
+
+      <SubmitButton
+        label="Resend verification link"
+        loadingLabel="Sending..."
+        loading={loading}
+        disabled={!!success}
+      />
     </form>
   );
 }

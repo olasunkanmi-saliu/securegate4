@@ -1,0 +1,53 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-lg);
+  background: var(--color-background);
+}
+
+.card {
+  width: 100%;
+  max-width: 26rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl) var(--space-xl);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.brand {
+  text-align: center;
+  margin-bottom: var(--space-xs);
+}
+
+.logo {
+  font-family: var(--font-text-lg-semibold-family);
+  font-size: var(--font-text-lg-semibold-size);
+  font-weight: var(--font-text-lg-semibold-weight);
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display-xs-bold-family);
+  font-size: var(--font-display-xs-bold-size);
+  font-weight: var(--font-display-xs-bold-weight);
+  line-height: var(--font-display-xs-bold-line-height);
+  color: var(--color-on-surface);
+  text-align: center;
+}
+
+.subtitle {
+  margin: 0;
+  font-family: var(--font-text-md-regular-family);
+  font-size: var(--font-text-md-regular-size);
+  line-height: var(--font-text-md-regular-line-height);
+  color: var(--color-on-surface-variant);
+  text-align: center;
+}
