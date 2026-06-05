@@ -14,6 +14,7 @@ interface FormInputProps {
   success?: string;
   disabled?: boolean;
   autoComplete?: string;
+  autoFocus?: boolean;
   onChange: (value: string) => void;
   onBlur: () => void;
 }
@@ -28,6 +29,7 @@ export function FormInput({
   success,
   disabled = false,
   autoComplete,
+  autoFocus,
   onChange,
   onBlur,
 }: FormInputProps): JSX.Element {
@@ -48,6 +50,7 @@ export function FormInput({
         value={value}
         disabled={disabled}
         autoComplete={autoComplete}
+        autoFocus={autoFocus}
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         aria-invalid={!!error}

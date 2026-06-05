@@ -7,9 +7,14 @@ import { Alert } from "@/components/ui/Alert";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PasswordStrength } from "@/components/ui/PasswordStrength";
 import { SubmitButton } from "@/components/ui/SubmitButton";
-import { passwordSchema } from "@/lib/validations";
+import { resetPasswordSchema } from "@/lib/validations";
 
 import styles from "./ResetPasswordForm.module.css";
+
+interface FieldErrors {
+  password?: string;
+  confirmPassword?: string;
+}
 
 interface ResetPasswordFormProps {
   token: string;
@@ -20,41 +25,51 @@ export function ResetPasswordForm({
 }: ResetPasswordFormProps): JSX.Element {
   const router = useRouter();
   const [password, setPassword] = useState("");
-  const [fieldError, setFieldError] = useState<string | undefined>(undefined);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  function validate(): void {
-    const result = passwordSchema.safeParse(password);
-    setFieldError(result.success ? undefined : result.error.issues[0]?.message);
+  function validateField(field: keyof FieldErrors): void {
+    const result = resetPasswordSchema.safeParse({ token, password, confirmPassword });
+    if (!result.success) {
+      const err = result.error.flatten().fieldErrors;
+      setFieldErrors((prev) => ({ ...prev, [field]: err[field]?.[0] }));
+    } else {
+      setFieldErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
   }
 
   async function handleSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     setServerError("");
 
-    const result = passwordSchema.safeParse(password);
+    const result = resetPasswordSchema.safeParse({ token, password, confirmPassword });
     if (!result.success) {
-      setFieldError(result.error.issues[0]?.message);
+      const err = result.error.flatten().fieldErrors;
+      setFieldErrors({
+        password: err.password?.[0],
+        confirmPassword: err.confirmPassword?.[0],
+      });
       return;
     }
 
-    setFieldError(undefined);
+    setFieldErrors({});
     setLoading(true);
 
     try {
       const res = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, password: result.data.password }),
       });
 
       if (res.status === 400) {
-        const data: { fieldErrors?: { password?: string[] } } = await res.json();
-        if (data.fieldErrors?.password?.[0]) {
-          setFieldError(data.fieldErrors.password[0]);
+        const body = await res.json();
+        if (body.fieldErrors?.password?.[0]) {
+          setFieldError("password", body.fieldErrors.password[0]);
         } else {
-          router.push("/forgot-password?expired=1");
+          router.push("/auth?mode=forgot-password&expired=1");
         }
         return;
       }
@@ -64,12 +79,16 @@ export function ResetPasswordForm({
         return;
       }
 
-      router.push("/login?reset=1");
+      router.push("/auth?mode=login&reset=1");
     } catch {
       setServerError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  function setFieldError(field: keyof FieldErrors, message: string): void {
+    setFieldErrors((prev) => ({ ...prev, [field]: message }));
   }
 
   return (
@@ -81,14 +100,26 @@ export function ResetPasswordForm({
         label="New password"
         placeholder="Enter a strong password"
         value={password}
-        error={fieldError}
+        error={fieldErrors.password}
         disabled={loading}
         autoComplete="new-password"
         onChange={setPassword}
-        onBlur={validate}
+        onBlur={() => validateField("password")}
       />
 
       <PasswordStrength password={password} />
+
+      <PasswordInput
+        id="confirmPassword"
+        label="Confirm password"
+        placeholder="Re-enter your password"
+        value={confirmPassword}
+        error={fieldErrors.confirmPassword}
+        disabled={loading}
+        autoComplete="new-password"
+        onChange={setConfirmPassword}
+        onBlur={() => validateField("confirmPassword")}
+      />
 
       <SubmitButton
         label="Update password"

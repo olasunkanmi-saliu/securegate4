@@ -16,12 +16,33 @@ export const nameSchema = z
 
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
+  .min(1, "Password field must not be empty")
   .max(128, "Password must be under 128 characters")
-  .regex(/[A-Z]/, "Must contain an uppercase letter")
-  .regex(/[a-z]/, "Must contain a lowercase letter")
-  .regex(/[0-9]/, "Must contain a digit")
-  .regex(PASSWORD_SPECIAL_CHARS, "Must contain a special character");
+  .superRefine((val, ctx) => {
+    if (!/[A-Z]/.test(val)) {
+      ctx.addIssue({ code: "custom", message: "Password must contain an uppercase letter" });
+      return;
+    }
+    if (!/[a-zA-Z]/.test(val)) {
+      ctx.addIssue({ code: "custom", message: "Password must contain at least one letter" });
+      return;
+    }
+    if (!/[0-9]/.test(val)) {
+      ctx.addIssue({ code: "custom", message: "Password must contain at least one number" });
+      return;
+    }
+    if (!/[a-z]/.test(val)) {
+      ctx.addIssue({ code: "custom", message: "Password must contain a lowercase letter" });
+      return;
+    }
+    if (!PASSWORD_SPECIAL_CHARS.test(val)) {
+      ctx.addIssue({ code: "custom", message: "Password must contain a special character" });
+      return;
+    }
+    if (val.length < 8) {
+      ctx.addIssue({ code: "custom", message: "Password must be at least 8 characters" });
+    }
+  });
 
 export const signupSchema = z.object({
   name: nameSchema,
@@ -43,6 +64,15 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
+  token: z.string().min(1, "Token is required"),
+  password: passwordSchema,
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export const resetPasswordApiSchema = z.object({
   token: z.string().min(1, "Token is required"),
   password: passwordSchema,
 });

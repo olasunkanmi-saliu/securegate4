@@ -44,5 +44,5 @@ export default async function VerifyEmailPage({
     db.verificationToken.delete({ where: { id: record.id } }),
   ]);
 
-  redirect("/login?verified=1");
+  redirect("/auth?mode=login&verified=1");
 }

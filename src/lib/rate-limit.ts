@@ -53,10 +53,11 @@ export async function checkRateLimit(
   }
 
   const result = await limiter.limit(ip);
+  const resetTime = result.reset ?? Date.now() + 60_000;
   return {
     success: result.success,
     retryAfter: result.success
       ? 0
-      : Math.ceil((result.reset - Date.now()) / 1000),
+      : Math.ceil((resetTime - Date.now()) / 1000),
   };
 }

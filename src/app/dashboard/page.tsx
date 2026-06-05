@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage(): Promise<JSX.Element> {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) {
-    redirect("/login");
+    redirect("/auth?mode=login");
   }
 
   const user = await db.user.findUnique({

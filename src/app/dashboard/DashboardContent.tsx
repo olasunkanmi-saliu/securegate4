@@ -18,7 +18,7 @@ export function DashboardContent({
 
   async function handleSignOut(): Promise<void> {
     setSigningOut(true);
-    await signOut({ callbackUrl: "/login" });
+    await signOut({ callbackUrl: "/auth?mode=login" });
   }
 
   return (

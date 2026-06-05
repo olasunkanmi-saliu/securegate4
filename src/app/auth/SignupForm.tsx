@@ -88,43 +88,73 @@ export function SignupForm(): JSX.Element {
     <form onSubmit={handleSubmit} className={styles.form} noValidate>
       {serverError && <Alert variant="error" message={serverError} />}
       {success && <Alert variant="success" message={success} />}
-      {success && (
-        <Link href="/login" className={styles.footerLink} style={{ textAlign: "center" }}>
-          Proceed to sign in
-        </Link>
-      )}
 
       <FormInput
         id="name"
-        label="Full name"
+        label="Enter Full Name"
         value={name}
         error={fieldErrors.name}
         disabled={loading || !!success}
         autoComplete="name"
-        onChange={setName}
+        autoFocus
+        onChange={(value) => {
+          setName(value);
+          if (fieldErrors.name) {
+            setFieldErrors((prev) => ({ ...prev, name: undefined }));
+          }
+        }}
         onBlur={() => validateField("name")}
       />
 
       <FormInput
         id="email"
-        label="Email address"
+        label="Enter Email"
         type="email"
         value={email}
         error={fieldErrors.email}
         disabled={loading || !!success}
         autoComplete="email"
-        onChange={setEmail}
+        onChange={(value) => {
+          setEmail(value);
+          if (value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, email: "Enter a valid email address" }));
+          } else {
+            setFieldErrors((prev) => ({ ...prev, email: undefined }));
+          }
+        }}
         onBlur={() => validateField("email")}
       />
 
       <PasswordInput
         id="password"
-        label="Password"
+        label="Choose Password"
+        placeholder=""
         value={password}
         error={fieldErrors.password}
         disabled={loading || !!success}
         autoComplete="new-password"
-        onChange={setPassword}
+        onChange={(value) => {
+          setPassword(value);
+          if (!value) {
+            setFieldErrors((prev) => ({ ...prev, password: undefined }));
+            return;
+          }
+          if (!/[A-Z]/.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, password: "Password must contain an uppercase letter" }));
+          } else if (!/[a-zA-Z]/.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, password: "Password must contain at least one letter" }));
+          } else if (!/[0-9]/.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, password: "Password must contain at least one number" }));
+          } else if (!/[a-z]/.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, password: "Password must contain a lowercase letter" }));
+          } else if (!/[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/]/.test(value)) {
+            setFieldErrors((prev) => ({ ...prev, password: "Password must contain a special character" }));
+          } else if (value.length < 8) {
+            setFieldErrors((prev) => ({ ...prev, password: "Password must be at least 8 characters" }));
+          } else {
+            setFieldErrors((prev) => ({ ...prev, password: undefined }));
+          }
+        }}
         onBlur={() => validateField("password")}
       />
 
@@ -139,7 +169,7 @@ export function SignupForm(): JSX.Element {
 
       <p className={styles.footer}>
         Already have an account?{" "}
-        <Link className={styles.footerLink} href="/login">
+        <Link className={styles.footerLink} href="?mode=login">
           Sign in
         </Link>
       </p>

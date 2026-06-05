@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 
 import { padToMinDuration } from "@/lib/auth-timing";
+import { RESET_TTL_MS } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateToken, hashToken } from "@/lib/tokens";
+import { extractClientIp } from "@/lib/utils";
 import { forgotPasswordSchema } from "@/lib/validations";
 
 import type { NextRequest } from "next/server";
 
-const RESET_TTL_MS = 60 * 60 * 1000;
 const GENERIC_OK_MESSAGE =
   "If an account exists, a reset link has been sent.";
 
@@ -28,12 +29,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
     const { email } = parsed.data;
 
-    const ip =
-      (request.headers.get("x-forwarded-for") ?? "unknown")
-        .split(",")[0]
-        ?.trim() ?? "unknown";
+    const ip = extractClientIp(request);
     const rateLimit = await checkRateLimit(ip, "forgot-password");
     if (!rateLimit.success) {
+      await padToMinDuration(startedAt);
       return NextResponse.json(
         { error: "Too many requests." },
         {

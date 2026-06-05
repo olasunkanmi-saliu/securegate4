@@ -18,7 +18,8 @@
 }
 
 .button:hover:not(:disabled) {
-  background: var(--btn-primary-hover);
+  background: var(--color-inverse-surface);
+  color: var(--color-on-primary);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 import styles from "./AuthCard.module.css";
@@ -15,12 +16,10 @@ export function AuthCard({
 }: AuthCardProps): JSX.Element {
   return (
     <div className={styles.wrapper}>
+      <Link href="/" className={styles.brand} aria-label="SecureGate home">
+        SecureGate
+      </Link>
       <div className={styles.card}>
-        <div className={styles.brand}>
-          <span className={styles.logo} aria-hidden="true">
-            SecureGate
-          </span>
-        </div>
         <h1 className={styles.title}>{title}</h1>
         {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
         {children}

@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
-    "@react-email/components": "^1.0.12",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "bcryptjs": "^3.0.3",
     "next": "14.2.35",
     "next-auth": "^4.24.14",
+    "nodemailer": "^7.0.13",
     "prisma": "^6.19.3",
     "react": "^18",
     "react-dom": "^18",
@@ -25,6 +25,7 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "eslint": "^8",

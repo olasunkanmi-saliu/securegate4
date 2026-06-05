@@ -21,7 +21,7 @@ export default async function ResetPasswordPage({
   });
 
   if (!record || record.expires < new Date()) {
-    redirect("/forgot-password?expired=1");
+    redirect("/auth?mode=forgot-password&expired=1");
   }
 
   return (

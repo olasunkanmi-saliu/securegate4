@@ -1,21 +1,20 @@
 import { hash } from "bcryptjs";
 import { NextResponse } from "next/server";
 
+import { BCRYPT_ROUNDS, GENERIC_SERVER_ERROR } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { hashToken } from "@/lib/tokens";
-import { resetPasswordSchema } from "@/lib/validations";
+import { resetPasswordApiSchema } from "@/lib/validations";
 
 import type { NextRequest } from "next/server";
 
-const BCRYPT_ROUNDS = 12;
-const GENERIC_SERVER_ERROR = "Something went wrong. Please try again.";
 const INVALID_TOKEN_MESSAGE = "Invalid or expired reset link.";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
     const body = await request.json();
 
-    const parsed = resetPasswordSchema.safeParse(body);
+    const parsed = resetPasswordApiSchema.safeParse(body);
     if (!parsed.success) {
       const fieldErrors = parsed.error.flatten().fieldErrors;
       return NextResponse.json(

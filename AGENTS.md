@@ -21,7 +21,7 @@ SecureGate is a standalone, production-grade authentication and identity securit
 - **Hashing**: bcryptjs with 12 salt rounds
 - **Validation**: Zod — server-side, on every input, before any DB operation
 - **Rate Limiting**: @upstash/ratelimit with Upstash Redis (sliding window)
-- **Email**: Resend + React Email (verification + reset emails)
+- **Email**: Resend / SMTP / Console stub (verification + reset emails, inline HTML)
 - **Styling**: CSS Modules + CSS custom properties (design tokens in `design-tokens.css`)
 - **Token Generation**: Node.js `crypto.randomBytes(32).toString('hex')`
 - **Deployment**: Vercel
@@ -36,7 +36,7 @@ securegate/
 ├── src/
 │   ├── app/
 │   │   ├── layout.tsx
-│   │   ├── page.tsx             # Redirects to /login
+│   │   ├── page.tsx             # Landing page with two CTAs (sign in / sign up)
 │   │   ├── login/
 │   │   │   └── page.tsx
 │   │   ├── signup/
@@ -49,13 +49,13 @@ securegate/
 │   │   │   └── [token]/
 │   │   │       └── page.tsx
 │   │   ├── verify-email/
-│   │   │   └── [token]/
+│   │   │   ├── [token]/
+│   │   │   │   └── page.tsx
+│   │   │   └── please-verify/
 │   │   │       └── page.tsx
 │   │   └── api/
 │   │       ├── auth/
 │   │       │   ├── signup/
-│   │       │   │   └── route.ts
-│   │       │   ├── signout/
 │   │       │   │   └── route.ts
 │   │       │   └── [...nextauth]/
 │   │       │       └── route.ts
@@ -68,20 +68,26 @@ securegate/
 │   │               └── route.ts
 │   ├── lib/
 │   │   ├── auth.ts              # NextAuth config + authorize()
+│   │   ├── auth-timing.ts       # Response time padding for enumeration defense
+│   │   ├── constants.ts         # Shared constants (bcrypt rounds, TTLs)
 │   │   ├── db.ts                # Prisma client singleton
 │   │   ├── tokens.ts            # Token generation + SHA-256 hashing
-│   │   ├── mail.ts              # Resend client + send helpers
+│   │   ├── mail.ts              # Resend/SMTP/Console mail services + inline HTML templates
 │   │   ├── rate-limit.ts        # Upstash ratelimit config
-│   │   └── validations.ts       # Zod schemas (email, password, name)
+│   │   ├── utils.ts             # cx() classname helper + extractClientIp()
+│   │   └── validations.ts       # Zod schemas (email, password, name, signup, signin, etc.)
 │   ├── components/
-│   │   ├── ui/                  # Shared UI components (Button, Input, etc.)
-│   │   └── emails/              # React Email components
+│   │   └── ui/                  # Shared UI components (Alert, AuthCard, FormInput, etc.)
+│   ├── types/
+│   │   └── next-auth.d.ts       # NextAuth type augmentation
 │   └── styles/
 │       └── design-tokens.css    # CSS custom properties (design tokens)
-├── middleware.ts                 # NextAuth route protection
+├── src/middleware.ts             # NextAuth route protection
 ├── .env.local                   # Local secrets (gitignored)
 ├── .env.example                 # Placeholder env vars
-├── next.config.js               # Security headers
+├── next.config.mjs              # Security headers + CSP
+├── DEPLOY.md                    # Deployment checklist
+├── AGENTS.md                    # AI coding assistant rules
 └── package.json
 ```
 
@@ -113,6 +119,8 @@ Three models in `prisma/schema.prisma`, all targeting PostgreSQL:
 | POST   | /api/forgot-password        | No   | Request password reset email   |
 | POST   | /api/reset-password         | No   | Submit new password with token |
 | POST   | /api/verify-email/resend    | No   | Resend verification email      |
+
+No route should exist outside this table.
 
 No route should exist outside this table.
 
