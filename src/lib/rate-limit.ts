@@ -52,7 +52,13 @@ export async function checkRateLimit(
     return { success: true, retryAfter: 0 };
   }
 
-  const result = await limiter.limit(ip);
+  let result: { success: boolean; reset?: number };
+  try {
+    result = await limiter.limit(ip);
+  } catch {
+    console.error("[RATE-LIMIT] Upstash Redis error — allowing request.");
+    return { success: true, retryAfter: 0 };
+  }
   const resetTime = result.reset ?? Date.now() + 60_000;
   return {
     success: result.success,
