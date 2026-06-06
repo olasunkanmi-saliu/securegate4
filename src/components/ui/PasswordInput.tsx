@@ -9,6 +9,7 @@ import styles from "./PasswordInput.module.css";
 interface PasswordInputProps {
   id: string;
   label: string;
+  labelExtra?: React.ReactNode;
   placeholder?: string;
   value: string;
   error?: string;
@@ -21,6 +22,7 @@ interface PasswordInputProps {
 export function PasswordInput({
   id,
   label,
+  labelExtra,
   placeholder = "Enter your password",
   value,
   error,
@@ -33,9 +35,12 @@ export function PasswordInput({
 
   return (
     <div className={styles.field}>
-      <label htmlFor={id} className={styles.label}>
-        {label}
-      </label>
+      <div className={styles.labelRow}>
+        <label htmlFor={id} className={styles.label}>
+          {label}
+        </label>
+        {labelExtra}
+      </div>
       <div className={styles.inputWrap}>
         <input
           id={id}

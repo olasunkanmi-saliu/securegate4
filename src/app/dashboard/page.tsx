@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 
 import { authOptions } from "@/lib/auth";
+import { GENERIC_SERVER_ERROR } from "@/lib/constants";
 import { db } from "@/lib/db";
 
 import { DashboardContent } from "./DashboardContent";
@@ -14,12 +15,22 @@ export default async function DashboardPage(): Promise<JSX.Element> {
     redirect("/auth?mode=login");
   }
 
-  const user = await db.user.findUnique({
-    where: { email: session.user.email },
-    select: { name: true, email: true, emailVerified: true },
-  });
+  let user;
+  try {
+    user = await db.user.findUnique({
+      where: { email: session.user.email },
+      select: { name: true, email: true, emailVerified: true },
+    });
+  } catch (error) {
+    console.error("[DASHBOARD]", error);
+    return <DashboardContent userName="" userEmail="" error={GENERIC_SERVER_ERROR} />;
+  }
 
-  if (!user || !user.emailVerified) {
+  if (!user) {
+    redirect("/auth?mode=login");
+  }
+
+  if (!user.emailVerified) {
     redirect("/verify-email/please-verify");
   }
 

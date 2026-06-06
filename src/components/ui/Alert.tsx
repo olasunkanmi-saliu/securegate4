@@ -4,7 +4,7 @@ import { cx } from "@/lib/utils";
 
 import styles from "./Alert.module.css";
 
-type AlertVariant = "success" | "error" | "warning" | "info";
+type AlertVariant = "success" | "error" | "warning";
 
 interface AlertProps {
   variant: AlertVariant;
@@ -53,20 +53,7 @@ const icons: Record<AlertVariant, ReactNode> = {
       <line x1="12" y1="17" x2="12.01" y2="17" />
     </svg>
   ),
-  info: (
-    <svg
-      className={styles.icon}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <line x1="12" y1="16" x2="12" y2="12" />
-      <line x1="12" y1="8" x2="12.01" y2="8" />
-    </svg>
-  ),
+
 };
 
 export function Alert({

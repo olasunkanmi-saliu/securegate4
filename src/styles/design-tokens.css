@@ -638,13 +638,11 @@
   --success: var(--color-tertiary);
   --error: var(--color-error);
   --warning: hsl(38, 92%, 50%);
-  --info: var(--color-secondary);
 
   /* Role tokens */
   /* Button roles */
   --btn-primary-bg: var(--color-primary);
   --btn-primary-text: var(--color-on-primary);
-  --btn-primary-hover: var(--color-primary-container);
   --btn-primary-disabled-bg: var(--color-surface-variant);
   --btn-primary-disabled-text: var(--color-on-surface-variant);
   /* Input roles */
@@ -654,13 +652,8 @@
   --input-border: var(--color-outline);
   --input-border-hover: var(--color-on-surface);
   --input-border-focus: var(--color-primary);
-  --input-border-error: var(--color-error);
-  --input-border-success: var(--color-tertiary);
-  --input-focus-ring: var(--color-primary-container);
-  --input-error-ring: var(--color-error-container);
   --input-label: var(--color-on-surface-variant);
   --input-error-text: var(--color-error);
-  --input-success-text: var(--color-tertiary);
   /* Card roles */
   --card-bg: var(--color-surface-container-low);
   --card-border: var(--color-outline-variant);
@@ -690,10 +683,6 @@
   --alert-warning-border: hsl(38, 92%, 50%);
   --alert-warning-text: hsl(38, 80%, 30%);
   --alert-warning-icon: hsl(38, 92%, 50%);
-  --alert-info-bg: var(--color-secondary-container);
-  --alert-info-border: var(--color-secondary);
-  --alert-info-text: var(--color-on-secondary-container);
-  --alert-info-icon: var(--color-secondary);
   /* Overlay roles */
   --overlay-scrim: rgba(0, 0, 0, 0.5);
   /* Badge roles */
@@ -726,50 +715,4 @@
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
   --shadow-focus: 0 0 0 3px var(--color-primary-container);
   --shadow-error: 0 0 0 3px var(--color-error-container);
-}
-
-[data-theme="dark"] {
-  /* Color roles - dark */
-  --color-primary: hsl(215, 35%, 79%);
-  --color-on-primary: hsl(212, 36%, 20%);
-  --color-primary-container: hsl(213, 26%, 29%);
-  --color-on-primary-container: hsl(216, 72%, 91%);
-  --color-secondary: hsl(202, 95%, 68%);
-  --color-on-secondary: hsl(200, 100%, 20%);
-  --color-secondary-container: hsl(199, 100%, 29%);
-  --color-on-secondary-container: hsl(206, 100%, 83%);
-  --color-tertiary: hsl(159, 75%, 62%);
-  --color-on-tertiary: hsl(161, 94%, 17%);
-  --color-tertiary-container: hsl(161, 94%, 25%);
-  --color-on-tertiary-container: hsl(155, 88%, 77%);
-  --color-error: hsl(0, 94%, 80%);
-  --color-on-error: hsl(0, 63%, 23%);
-  --color-error-container: hsl(0, 58%, 33%);
-  --color-on-error-container: hsl(0, 100%, 90%);
-  --color-background: hsl(215, 36%, 6%);
-  --color-on-background: hsl(218, 65%, 91%);
-  --color-surface: hsl(215, 36%, 6%);
-  --color-on-surface: hsl(218, 65%, 91%);
-  --color-surface-variant: hsl(215, 17%, 30%);
-  --color-on-surface-variant: hsl(216, 28%, 80%);
-  --color-outline: hsl(215, 14%, 59%);
-  --color-outline-variant: hsl(215, 17%, 30%);
-  --color-inverse-surface: hsl(218, 65%, 91%);
-  --color-inverse-on-surface: hsl(215, 25%, 20%);
-  --color-inverse-primary: hsl(213, 20%, 38%);
-  --color-surface-dim: hsl(215, 36%, 6%);
-  --color-surface-bright: hsl(215, 23%, 24%);
-  --color-surface-container-lowest: hsl(215, 40%, 4%);
-  --color-surface-container-low: hsl(215, 32%, 11%);
-  --color-surface-container: hsl(215, 30%, 13%);
-  --color-surface-container-high: hsl(215, 28%, 17%);
-  --color-surface-container-highest: hsl(215, 24%, 22%);
-
-  /* Warning tokens - dark overrides */
-  --warning: hsl(40, 90%, 60%);
-  --strength-fair: hsl(40, 90%, 60%);
-  --alert-warning-bg: hsl(40, 50%, 15%);
-  --alert-warning-border: hsl(40, 90%, 60%);
-  --alert-warning-text: hsl(40, 80%, 85%);
-  --alert-warning-icon: hsl(40, 90%, 60%);
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { cx } from "@/lib/utils";
+import { PASSWORD_SPECIAL_CHARS } from "@/lib/validations";
 
 import styles from "./PasswordStrength.module.css";
 
@@ -16,7 +17,7 @@ interface StrengthResult {
   tier: StrengthTier;
 }
 
-const SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/]/;
+const SPECIAL_CHARS = PASSWORD_SPECIAL_CHARS;
 
 function evaluateStrength(password: string): StrengthResult {
   if (!password) return { score: 0, label: "", tier: "none" };

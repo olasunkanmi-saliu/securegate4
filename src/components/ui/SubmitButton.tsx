@@ -9,7 +9,6 @@ interface SubmitButtonProps {
   loadingLabel: string;
   loading?: boolean;
   disabled?: boolean;
-  onClick?: () => void;
 }
 
 export function SubmitButton({
@@ -17,14 +16,12 @@ export function SubmitButton({
   loadingLabel,
   loading = false,
   disabled = false,
-  onClick,
 }: SubmitButtonProps): JSX.Element {
   return (
     <button
       type="submit"
       className={cx(styles.button, loading && styles.buttonLoading)}
       disabled={loading || disabled}
-      onClick={onClick}
       aria-busy={loading}
     >
       {loading && <span className={styles.spinner} aria-hidden="true" />}

@@ -1,11 +1,20 @@
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import CredentialsProvider from "next-auth/providers/credentials";
 
+import { BCRYPT_ROUNDS } from "@/lib/constants";
 import { db } from "@/lib/db";
-import { checkRateLimit } from "@/lib/rate-limit";
 import { signinSchema } from "@/lib/validations";
 
 import type { NextAuthOptions } from "next-auth";
+
+let fakeHashPromise: Promise<string> | null = null;
+
+async function getFakeHash(): Promise<string> {
+  if (!fakeHashPromise) {
+    fakeHashPromise = hash("dummy", BCRYPT_ROUNDS);
+  }
+  return fakeHashPromise;
+}
 
 /**
  * Session strategy: JWT.
@@ -19,6 +28,7 @@ import type { NextAuthOptions } from "next-auth";
  * the schema audit surface to exactly the three models the spec defines.
  */
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
     maxAge: 24 * 60 * 60,
@@ -33,26 +43,23 @@ export const authOptions: NextAuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials, req) {
+      async authorize(credentials) {
         const parsed = signinSchema.safeParse(credentials);
         if (!parsed.success) {
           return null;
         }
         const { email, password } = parsed.data;
 
-        const rawIp = req?.headers?.["x-forwarded-for"] ?? "unknown";
-        const ip =
-          (typeof rawIp === "string"
-            ? rawIp.split(",")[0]?.trim()
-            : rawIp[0]?.trim()) ?? "unknown";
-
-        const rateLimit = await checkRateLimit(ip, "signin");
-        if (!rateLimit.success) {
-          throw new Error("RATE_LIMITED");
+        let user;
+        try {
+          user = await db.user.findUnique({ where: { email } });
+        } catch (error) {
+          console.error("[AUTH:FIND_USER]", error);
+          return null;
         }
 
-        const user = await db.user.findUnique({ where: { email } });
         if (!user) {
+          await compare(password, await getFakeHash());
           return null;
         }
 
@@ -62,7 +69,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         if (!user.emailVerified) {
-          throw new Error("EMAIL_NOT_VERIFIED");
+          return null;
         }
 
         return {

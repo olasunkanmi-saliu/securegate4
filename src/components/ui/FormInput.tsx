@@ -11,7 +11,6 @@ interface FormInputProps {
   placeholder?: string;
   value: string;
   error?: string;
-  success?: string;
   disabled?: boolean;
   autoComplete?: string;
   autoFocus?: boolean;
@@ -26,7 +25,6 @@ export function FormInput({
   placeholder,
   value,
   error,
-  success,
   disabled = false,
   autoComplete,
   autoFocus,
@@ -43,8 +41,7 @@ export function FormInput({
         type={type}
         className={cx(
           styles.input,
-          error && styles.inputError,
-          success && styles.inputSuccess
+          error && styles.inputError
         )}
         placeholder={placeholder}
         value={value}
@@ -54,9 +51,7 @@ export function FormInput({
         onChange={(e) => onChange(e.target.value)}
         onBlur={onBlur}
         aria-invalid={!!error}
-        aria-describedby={
-          error ? `${id}-error` : success ? `${id}-success` : undefined
-        }
+        aria-describedby={error ? `${id}-error` : undefined}
       />
       {error && (
         <p
@@ -66,11 +61,6 @@ export function FormInput({
           aria-live="polite"
         >
           {error}
-        </p>
-      )}
-      {success && (
-        <p id={`${id}-success`} className={styles.successMsg}>
-          {success}
         </p>
       )}
     </div>

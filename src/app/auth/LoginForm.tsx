@@ -18,16 +18,8 @@ interface FieldErrors {
   password?: string;
 }
 
-function describeError(code: string): string {
-  switch (code) {
-    case "RATE_LIMITED":
-      return "Too many attempts. Please try again later.";
-    case "EMAIL_NOT_VERIFIED":
-      return "Please verify your email before signing in.";
-    case "CredentialsSignin":
-    default:
-      return "Invalid email or password.";
-  }
+function describeError(): string {
+  return "Invalid email or password.";
 }
 
 export function LoginForm(): JSX.Element {
@@ -40,7 +32,6 @@ export function LoginForm(): JSX.Element {
   const [password, setPassword] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [serverError, setServerError] = useState("");
-  const [unverified, setUnverified] = useState(false);
   const [loading, setLoading] = useState(false);
 
   function validateField(field: keyof FieldErrors): void {
@@ -56,7 +47,6 @@ export function LoginForm(): JSX.Element {
   async function handleSubmit(event: React.FormEvent): Promise<void> {
     event.preventDefault();
     setServerError("");
-    setUnverified(false);
 
     const result = signinSchema.safeParse({ email, password });
     if (!result.success) {
@@ -79,11 +69,7 @@ export function LoginForm(): JSX.Element {
       });
 
       if (!res || res.error) {
-        const code = res?.error ?? "CredentialsSignin";
-        if (code === "EMAIL_NOT_VERIFIED") {
-          setUnverified(true);
-        }
-        setServerError(describeError(code));
+        setServerError(describeError());
         return;
       }
 
@@ -111,11 +97,6 @@ export function LoginForm(): JSX.Element {
         />
       )}
       {serverError && <Alert variant="error" message={serverError} />}
-      {unverified && (
-        <Link className={styles.unverifiedLink} href="/verify-email/please-verify">
-          Resend the verification email
-        </Link>
-      )}
 
       <FormInput
         id="email"
@@ -137,6 +118,12 @@ export function LoginForm(): JSX.Element {
       <PasswordInput
         id="password"
         label="Password"
+        placeholder=""
+        labelExtra={
+          <Link className={styles.fieldLink} href="?mode=forgot-password">
+            Forgot password?
+          </Link>
+        }
         value={password}
         error={fieldErrors.password}
         disabled={loading}
@@ -157,9 +144,6 @@ export function LoginForm(): JSX.Element {
       />
 
       <div className={styles.footer}>
-        <Link className={styles.footerLink} href="?mode=forgot-password">
-          Forgot password?
-        </Link>
         <span>
           New here?{" "}
           <Link className={styles.footerLink} href="?mode=signup">

@@ -1,9 +1,10 @@
 import { z } from "zod";
 
-const PASSWORD_SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/]/;
+export const PASSWORD_SPECIAL_CHARS = /[!@#$%^&*()_+\-=\[\]{}|;:',.<>?/]/;
 
 export const emailSchema = z
   .string()
+  .trim()
   .email("Enter a valid email address")
   .max(255, "Email must be under 255 characters")
   .transform((value) => value.toLowerCase());
@@ -21,10 +22,6 @@ export const passwordSchema = z
   .superRefine((val, ctx) => {
     if (!/[A-Z]/.test(val)) {
       ctx.addIssue({ code: "custom", message: "Password must contain an uppercase letter" });
-      return;
-    }
-    if (!/[a-zA-Z]/.test(val)) {
-      ctx.addIssue({ code: "custom", message: "Password must contain at least one letter" });
       return;
     }
     if (!/[0-9]/.test(val)) {
@@ -77,8 +74,3 @@ export const resetPasswordApiSchema = z.object({
   password: passwordSchema,
 });
 
-export type SignupInput = z.infer<typeof signupSchema>;
-export type SigninInput = z.infer<typeof signinSchema>;
-export type ResendVerifyInput = z.infer<typeof resendVerifySchema>;
-export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
-export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

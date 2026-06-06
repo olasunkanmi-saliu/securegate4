@@ -22,6 +22,10 @@ interface MailService {
 const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
 const fromAddress = process.env.EMAIL_FROM ?? "noreply@example.com";
 
+function esc(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function verificationHtml(userName: string, url: string, expiresIn: string): string {
   return `<!DOCTYPE html>
 <html>
@@ -31,7 +35,7 @@ function verificationHtml(userName: string, url: string, expiresIn: string): str
       <tr><td align="center" style="padding:40px 24px">
         <table width="480" cellpadding="0" cellspacing="0" style="max-width:480px">
           <tr><td style="font-size:24px;font-weight:600;color:#0D1B2A;padding-bottom:16px">Verify your email</td></tr>
-          <tr><td style="font-size:14px;line-height:1.6;color:#334155;padding-bottom:24px">Hi ${userName}, please verify your email address to access your SecureGate dashboard.</td></tr>
+          <tr><td style="font-size:14px;line-height:1.6;color:#334155;padding-bottom:24px">Hi ${esc(userName)}, please verify your email address to access your SecureGate dashboard.</td></tr>
           <tr><td align="center" style="padding-bottom:24px">
             <a href="${url}" style="display:inline-block;background-color:#0EA5E9;color:#FFFFFF;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;text-decoration:none">Verify Email Address</a>
           </td></tr>
@@ -54,7 +58,7 @@ function passwordResetHtml(userName: string, url: string, expiresIn: string): st
       <tr><td align="center" style="padding:40px 24px">
         <table width="480" cellpadding="0" cellspacing="0" style="max-width:480px">
           <tr><td style="font-size:24px;font-weight:600;color:#0D1B2A;padding-bottom:16px">Reset your password</td></tr>
-          <tr><td style="font-size:14px;line-height:1.6;color:#334155;padding-bottom:24px">Hi ${userName}, we received a request to reset your password.</td></tr>
+          <tr><td style="font-size:14px;line-height:1.6;color:#334155;padding-bottom:24px">Hi ${esc(userName)}, we received a request to reset your password.</td></tr>
           <tr><td align="center" style="padding-bottom:24px">
             <a href="${url}" style="display:inline-block;background-color:#0EA5E9;color:#FFFFFF;font-size:14px;font-weight:500;padding:12px 24px;border-radius:8px;text-decoration:none">Reset Password</a>
           </td></tr>
@@ -126,13 +130,18 @@ class SmtpMailService implements MailService {
   private readonly transporter: nodemailer.Transporter;
 
   constructor() {
+    const smtpHost = process.env.SMTP_HOST ?? "";
+    const smtpPort = process.env.SMTP_PORT ?? "587";
+    const smtpUser = process.env.SMTP_USER ?? "";
+    const smtpPass = process.env.SMTP_PASS ?? "";
+
     this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST!,
-      port: Number(process.env.SMTP_PORT!),
-      secure: process.env.SMTP_PORT === "465",
+      host: smtpHost,
+      port: Number(smtpPort),
+      secure: smtpPort === "465",
       auth: {
-        user: process.env.SMTP_USER!,
-        pass: process.env.SMTP_PASS!,
+        user: smtpUser,
+        pass: smtpPass,
       },
       tls: {
         rejectUnauthorized: process.env.SMTP_REJECT_UNAUTHORIZED !== "false",

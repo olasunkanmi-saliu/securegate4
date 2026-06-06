@@ -1,7 +1,7 @@
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
-type LimiterIdentifier = "signin" | "signup" | "forgot-password" | "verify-resend";
+type LimiterIdentifier = "signin" | "signup" | "forgot-password" | "verify-resend" | "reset-password";
 
 interface RateLimitResult {
   success: boolean;
@@ -16,6 +16,7 @@ const limiterConfigs: Record<
   signup: { limit: 5, window: "10 m" },
   "forgot-password": { limit: 3, window: "15 m" },
   "verify-resend": { limit: 3, window: "15 m" },
+  "reset-password": { limit: 5, window: "10 m" },
 };
 
 const upstashConfigured =
@@ -23,7 +24,12 @@ const upstashConfigured =
   Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
 
 const limiters: Partial<Record<LimiterIdentifier, Ratelimit>> = (() => {
-  if (!upstashConfigured) return {};
+  if (!upstashConfigured) {
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[RATE-LIMIT] Upstash Redis not configured — rate limiting disabled.");
+    }
+    return {};
+  }
 
   const redis = new Redis({
     url: process.env.UPSTASH_REDIS_REST_URL as string,
@@ -43,12 +49,17 @@ const limiters: Partial<Record<LimiterIdentifier, Ratelimit>> = (() => {
   return out;
 })();
 
+const DEFAULT_RETRY_AFTER = 60;
+
 export async function checkRateLimit(
   ip: string,
   identifier: LimiterIdentifier
 ): Promise<RateLimitResult> {
   const limiter = limiters[identifier];
   if (!limiter) {
+    if (process.env.NODE_ENV === "production") {
+      return { success: false, retryAfter: DEFAULT_RETRY_AFTER };
+    }
     return { success: true, retryAfter: 0 };
   }
 
@@ -56,8 +67,8 @@ export async function checkRateLimit(
   try {
     result = await limiter.limit(ip);
   } catch {
-    console.error("[RATE-LIMIT] Upstash Redis error — allowing request.");
-    return { success: true, retryAfter: 0 };
+    console.error("[RATE-LIMIT] Upstash Redis error — blocking request.");
+    return { success: false, retryAfter: DEFAULT_RETRY_AFTER };
   }
   const resetTime = result.reset ?? Date.now() + 60_000;
   return {

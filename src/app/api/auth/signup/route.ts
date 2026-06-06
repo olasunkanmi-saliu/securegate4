@@ -8,12 +8,16 @@ import { db } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateToken, hashToken } from "@/lib/tokens";
-import { extractClientIp } from "@/lib/utils";
+import { extractClientIp, validateOrigin } from "@/lib/utils";
 import { signupSchema } from "@/lib/validations";
 
 import type { NextRequest } from "next/server";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const startedAt = Date.now();
   try {
     const body = await request.json();
@@ -59,21 +63,26 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     if (!user) {
       await padToMinDuration(startedAt);
       return NextResponse.json(
-        { error: GENERIC_SERVER_ERROR },
-        { status: 500 }
+        {
+          success: true,
+          message: "Account created. Check your email to verify your address.",
+        },
+        { status: 200 }
       );
     }
 
-    await db.verificationToken.deleteMany({ where: { identifier: email } });
-
     const rawToken = generateToken();
-    await db.verificationToken.create({
-      data: {
-        identifier: email,
-        token: hashToken(rawToken),
-        expires: new Date(Date.now() + VERIFICATION_TTL_MS),
-      },
-    });
+
+    await db.$transaction([
+      db.verificationToken.deleteMany({ where: { identifier: email } }),
+      db.verificationToken.create({
+        data: {
+          identifier: email,
+          token: hashToken(rawToken),
+          expires: new Date(Date.now() + VERIFICATION_TTL_MS),
+        },
+      }),
+    ]);
 
     await sendVerificationEmail(email, user.name, rawToken);
 

@@ -37,14 +37,14 @@ securegate/
 │   ├── app/
 │   │   ├── layout.tsx
 │   │   ├── page.tsx             # Landing page with two CTAs (sign in / sign up)
-│   │   ├── login/
-│   │   │   └── page.tsx
-│   │   ├── signup/
-│   │   │   └── page.tsx
+│   │   ├── auth/
+│   │   │   ├── page.tsx         # Unified auth page (login / signup / forgot-password)
+│   │   │   ├── AuthContent.tsx
+│   │   │   ├── LoginForm.tsx
+│   │   │   ├── SignupForm.tsx
+│   │   │   └── ForgotPasswordForm.tsx
 │   │   ├── dashboard/
 │   │   │   └── page.tsx         # Protected — requires auth + verified email
-│   │   ├── forgot-password/
-│   │   │   └── page.tsx
 │   │   ├── reset-password/
 │   │   │   └── [token]/
 │   │   │       └── page.tsx
@@ -74,7 +74,7 @@ securegate/
 │   │   ├── tokens.ts            # Token generation + SHA-256 hashing
 │   │   ├── mail.ts              # Resend/SMTP/Console mail services + inline HTML templates
 │   │   ├── rate-limit.ts        # Upstash ratelimit config
-│   │   ├── utils.ts             # cx() classname helper + extractClientIp()
+│   │   ├── utils.ts             # cx() classname helper + extractClientIp() + validateOrigin()
 │   │   └── validations.ts       # Zod schemas (email, password, name, signup, signin, etc.)
 │   ├── components/
 │   │   └── ui/                  # Shared UI components (Alert, AuthCard, FormInput, etc.)
@@ -82,10 +82,10 @@ securegate/
 │   │   └── next-auth.d.ts       # NextAuth type augmentation
 │   └── styles/
 │       └── design-tokens.css    # CSS custom properties (design tokens)
-├── src/middleware.ts             # NextAuth route protection
+├── src/middleware.ts             # NextAuth route protection + signin rate limiting
 ├── .env.local                   # Local secrets (gitignored)
 ├── .env.example                 # Placeholder env vars
-├── next.config.mjs              # Security headers + CSP
+├── next.config.js               # Security headers + CSP
 ├── DEPLOY.md                    # Deployment checklist
 ├── AGENTS.md                    # AI coding assistant rules
 └── package.json
@@ -107,9 +107,9 @@ Three models in `prisma/schema.prisma`, all targeting PostgreSQL:
 
 | Method | Path                        | Auth | Purpose                        |
 |--------|-----------------------------|------|--------------------------------|
-| GET    | /login                      | No   | Login page                     |
-| GET    | /signup                     | No   | Registration page              |
-| GET    | /forgot-password            | No   | Forgot password form           |
+| GET    | /auth?mode=login            | No   | Login page                     |
+| GET    | /auth?mode=signup            | No   | Registration page              |
+| GET    | /auth?mode=forgot-password   | No   | Forgot password form           |
 | GET    | /reset-password/[token]     | No   | Password reset form            |
 | GET    | /verify-email/[token]       | No   | Email verification handler     |
 | GET    | /dashboard                  | Yes  | Protected dashboard            |
@@ -167,6 +167,8 @@ Applied globally in `next.config.js`:
 - `X-Content-Type-Options: nosniff`
 - `Referrer-Policy: strict-origin-when-cross-origin`
 - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+- `Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; form-action 'self'; base-uri 'self'; frame-ancestors 'none'`
+- `X-Powered-By` removed via `poweredByHeader: false`
 
 ## Error Handling
 

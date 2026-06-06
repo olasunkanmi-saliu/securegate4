@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { sendVerificationEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateToken, hashToken } from "@/lib/tokens";
-import { extractClientIp } from "@/lib/utils";
+import { extractClientIp, validateOrigin } from "@/lib/utils";
 import { resendVerifySchema } from "@/lib/validations";
 
 import type { NextRequest } from "next/server";
@@ -15,6 +15,10 @@ const GENERIC_OK_MESSAGE =
   "If your account requires verification, a new link has been sent.";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const startedAt = Date.now();
   try {
     const body = await request.json();
@@ -45,16 +49,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const user = await db.user.findUnique({ where: { email } });
 
     if (user && !user.emailVerified) {
-      await db.verificationToken.deleteMany({ where: { identifier: email } });
-
       const rawToken = generateToken();
-      await db.verificationToken.create({
-        data: {
-          identifier: email,
-          token: hashToken(rawToken),
-          expires: new Date(Date.now() + VERIFICATION_TTL_MS),
-        },
-      });
+
+      await db.$transaction([
+        db.verificationToken.deleteMany({ where: { identifier: email } }),
+        db.verificationToken.create({
+          data: {
+            identifier: email,
+            token: hashToken(rawToken),
+            expires: new Date(Date.now() + VERIFICATION_TTL_MS),
+          },
+        }),
+      ]);
 
       await sendVerificationEmail(email, user.name, rawToken);
     }

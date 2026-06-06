@@ -16,11 +16,10 @@
     "next": "14.2.35",
     "next-auth": "^4.24.14",
     "nodemailer": "^7.0.13",
-    "prisma": "^6.19.3",
     "react": "^18",
     "react-dom": "^18",
     "resend": "^6.12.3",
-    "zod": "^4.4.3"
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -30,6 +29,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.35",
+    "prisma": "^6.19.3",
     "typescript": "^5"
   }
 }

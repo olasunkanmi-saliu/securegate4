@@ -4,18 +4,17 @@
   gap: 1rem;
 }
 
-.unverifiedLink {
-  align-self: center;
-  text-align: center;
+.fieldLink {
   font-family: var(--font-text-sm-semibold-family);
   font-size: var(--font-text-sm-semibold-size);
   font-weight: var(--font-text-sm-semibold-weight);
   color: var(--link-default);
-  text-decoration: underline;
+  text-decoration: none;
 }
 
-.unverifiedLink:hover {
+.fieldLink:hover {
   color: var(--link-hover);
+  text-decoration: underline;
 }
 
 .footer {
@@ -36,4 +35,5 @@
 
 .footerLink:hover {
   color: var(--link-hover);
+  text-decoration: underline;
 }

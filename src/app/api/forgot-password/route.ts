@@ -6,7 +6,7 @@ import { db } from "@/lib/db";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { generateToken, hashToken } from "@/lib/tokens";
-import { extractClientIp } from "@/lib/utils";
+import { extractClientIp, validateOrigin } from "@/lib/utils";
 import { forgotPasswordSchema } from "@/lib/validations";
 
 import type { NextRequest } from "next/server";
@@ -15,6 +15,10 @@ const GENERIC_OK_MESSAGE =
   "If an account exists, a reset link has been sent.";
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
+  if (!validateOrigin(request)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const startedAt = Date.now();
   try {
     const body = await request.json();
@@ -45,16 +49,18 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const user = await db.user.findUnique({ where: { email } });
 
     if (user) {
-      await db.passwordResetToken.deleteMany({ where: { email } });
-
       const rawToken = generateToken();
-      await db.passwordResetToken.create({
-        data: {
-          email,
-          token: hashToken(rawToken),
-          expires: new Date(Date.now() + RESET_TTL_MS),
-        },
-      });
+
+      await db.$transaction([
+        db.passwordResetToken.deleteMany({ where: { email } }),
+        db.passwordResetToken.create({
+          data: {
+            email,
+            token: hashToken(rawToken),
+            expires: new Date(Date.now() + RESET_TTL_MS),
+          },
+        }),
+      ]);
 
       await sendPasswordResetEmail(email, user.name, rawToken);
     }
