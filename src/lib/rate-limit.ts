@@ -49,16 +49,14 @@ const limiters: Partial<Record<LimiterIdentifier, Ratelimit>> = (() => {
   return out;
 })();
 
-const DEFAULT_RETRY_AFTER = 60;
-
 export async function checkRateLimit(
   ip: string,
   identifier: LimiterIdentifier
 ): Promise<RateLimitResult> {
   const limiter = limiters[identifier];
   if (!limiter) {
-    if (process.env.NODE_ENV === "production") {
-      return { success: false, retryAfter: DEFAULT_RETRY_AFTER };
+    if (process.env.NODE_ENV === "development") {
+      console.warn("[RATE-LIMIT] Upstash Redis not configured — rate limiting disabled.");
     }
     return { success: true, retryAfter: 0 };
   }
@@ -66,9 +64,9 @@ export async function checkRateLimit(
   let result: { success: boolean; reset?: number };
   try {
     result = await limiter.limit(ip);
-  } catch {
-    console.error("[RATE-LIMIT] Upstash Redis error — blocking request.");
-    return { success: false, retryAfter: DEFAULT_RETRY_AFTER };
+  } catch (error) {
+    console.error("[RATE-LIMIT] Upstash Redis error — allowing request.", error);
+    return { success: true, retryAfter: 0 };
   }
   const resetTime = result.reset ?? Date.now() + 60_000;
   return {
