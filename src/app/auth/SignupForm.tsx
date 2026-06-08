@@ -8,8 +8,7 @@ import { FormInput } from "@/components/ui/FormInput";
 import { PasswordInput } from "@/components/ui/PasswordInput";
 import { PasswordStrength } from "@/components/ui/PasswordStrength";
 import { SubmitButton } from "@/components/ui/SubmitButton";
-import { signupSchema } from "@/lib/validations";
-import { PASSWORD_SPECIAL_CHARS } from "@/lib/validations";
+import { checkPassword, signupSchema } from "@/lib/validations";
 
 import styles from "./SignupForm.module.css";
 
@@ -136,23 +135,10 @@ export function SignupForm(): JSX.Element {
         autoComplete="new-password"
         onChange={(value) => {
           setPassword(value);
-          if (!value) {
-            setFieldErrors((prev) => ({ ...prev, password: undefined }));
-            return;
-          }
-          if (!/[A-Z]/.test(value)) {
-            setFieldErrors((prev) => ({ ...prev, password: "Password must contain an uppercase letter" }));
-          } else if (!/[0-9]/.test(value)) {
-            setFieldErrors((prev) => ({ ...prev, password: "Password must contain at least one number" }));
-          } else if (!/[a-z]/.test(value)) {
-            setFieldErrors((prev) => ({ ...prev, password: "Password must contain a lowercase letter" }));
-          } else if (!PASSWORD_SPECIAL_CHARS.test(value)) {
-            setFieldErrors((prev) => ({ ...prev, password: "Password must contain a special character" }));
-          } else if (value.length < 8) {
-            setFieldErrors((prev) => ({ ...prev, password: "Password must be at least 8 characters" }));
-          } else {
-            setFieldErrors((prev) => ({ ...prev, password: undefined }));
-          }
+          setFieldErrors((prev) => ({
+            ...prev,
+            password: value ? checkPassword(value) ?? undefined : undefined,
+          }));
         }}
         onBlur={() => validateField("password")}
       />

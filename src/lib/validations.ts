@@ -15,29 +15,34 @@ export const nameSchema = z
   .min(2, "Name must be at least 2 characters")
   .max(50, "Name must be under 50 characters");
 
+export function checkPassword(value: string): string | null {
+  if (!/[A-Z]/.test(value)) return "Password must contain an uppercase letter";
+  if (!/[0-9]/.test(value)) return "Password must contain at least one number";
+  if (!/[a-z]/.test(value)) return "Password must contain a lowercase letter";
+  if (!PASSWORD_SPECIAL_CHARS.test(value)) return "Password must contain a special character";
+  if (value.length < 8) return "Password must be at least 8 characters";
+  return null;
+}
+
+export function scorePassword(value: string): number {
+  if (!value) return 0;
+  let score = 0;
+  if (value.length >= 8) score++;
+  if (/[A-Z]/.test(value)) score++;
+  if (/[a-z]/.test(value)) score++;
+  if (/[0-9]/.test(value)) score++;
+  if (PASSWORD_SPECIAL_CHARS.test(value)) score++;
+  return score;
+}
+
 export const passwordSchema = z
   .string()
   .min(1, "Password field must not be empty")
   .max(128, "Password must be under 128 characters")
   .superRefine((val, ctx) => {
-    if (!/[A-Z]/.test(val)) {
-      ctx.addIssue({ code: "custom", message: "Password must contain an uppercase letter" });
-      return;
-    }
-    if (!/[0-9]/.test(val)) {
-      ctx.addIssue({ code: "custom", message: "Password must contain at least one number" });
-      return;
-    }
-    if (!/[a-z]/.test(val)) {
-      ctx.addIssue({ code: "custom", message: "Password must contain a lowercase letter" });
-      return;
-    }
-    if (!PASSWORD_SPECIAL_CHARS.test(val)) {
-      ctx.addIssue({ code: "custom", message: "Password must contain a special character" });
-      return;
-    }
-    if (val.length < 8) {
-      ctx.addIssue({ code: "custom", message: "Password must be at least 8 characters" });
+    const error = checkPassword(val);
+    if (error) {
+      ctx.addIssue({ code: "custom", message: error });
     }
   });
 

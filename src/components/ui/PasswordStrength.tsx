@@ -1,7 +1,7 @@
 "use client";
 
 import { cx } from "@/lib/utils";
-import { PASSWORD_SPECIAL_CHARS } from "@/lib/validations";
+import { scorePassword } from "@/lib/validations";
 
 import styles from "./PasswordStrength.module.css";
 
@@ -17,17 +17,10 @@ interface StrengthResult {
   tier: StrengthTier;
 }
 
-const SPECIAL_CHARS = PASSWORD_SPECIAL_CHARS;
-
 function evaluateStrength(password: string): StrengthResult {
   if (!password) return { score: 0, label: "", tier: "none" };
 
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[a-z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (SPECIAL_CHARS.test(password)) score++;
+  const score = scorePassword(password);
 
   if (score <= 2) return { score, label: "Weak", tier: "weak" };
   if (score <= 4) return { score, label: "Fair", tier: "fair" };
