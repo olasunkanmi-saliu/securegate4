@@ -16,8 +16,10 @@ export async function middleware(
     const ip = extractClientIp(req);
     const rateLimit = await checkRateLimit(ip, "signin");
     if (!rateLimit.success) {
+      const signInUrl = new URL("/auth?mode=login", req.url);
+      signInUrl.searchParams.set("error", "RateLimit");
       return NextResponse.json(
-        { error: "Too many requests." },
+        { url: signInUrl.href },
         {
           status: 429,
           headers: { "Retry-After": String(rateLimit.retryAfter) },

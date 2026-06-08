@@ -69,7 +69,11 @@ export function LoginForm(): JSX.Element {
       });
 
       if (!res || res.error) {
-        setServerError(describeError());
+        if (res?.status === 429) {
+          setServerError("Too many attempts. Please try again later.");
+        } else {
+          setServerError(describeError());
+        }
         return;
       }
 
