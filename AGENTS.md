@@ -21,7 +21,7 @@ SecureGate is a standalone, production-grade authentication and identity securit
 - **Hashing**: bcryptjs with 12 salt rounds
 - **Validation**: Zod — server-side, on every input, before any DB operation
 - **Rate Limiting**: @upstash/ratelimit with Upstash Redis (sliding window)
-- **Email**: Resend / SMTP / Console stub (verification + reset emails, inline HTML)
+- **Email**: Resend / Nodemailer SMTP / Console stub (verification + reset emails, inline HTML)
 - **Styling**: CSS Modules + CSS custom properties (design tokens in `design-tokens.css`)
 - **Token Generation**: Node.js `crypto.randomBytes(32).toString('hex')`
 - **Deployment**: Vercel
