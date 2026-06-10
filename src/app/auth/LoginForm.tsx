@@ -68,7 +68,7 @@ export function LoginForm(): JSX.Element {
         redirect: false,
       });
 
-      if (!res || res.error) {
+      if (!res || res.error || !res.ok) {
         if (res?.status === 429) {
           setServerError("Too many attempts. Please try again later.");
         } else {
