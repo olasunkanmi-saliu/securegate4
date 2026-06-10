@@ -24,7 +24,11 @@ const upstashConfigured =
   Boolean(process.env.UPSTASH_REDIS_REST_TOKEN);
 
 // ── In-memory fallback for development (no Upstash required) ──────────
-const memStore = new Map<string, number[]>();
+// Pinned to globalThis because middleware runs in Edge runtime where module-level
+// state may not persist across requests (especially in dev with HMR).
+const memStore: Map<string, number[]> =
+  (globalThis as { __sgRateLimitStore?: Map<string, number[]> })
+    .__sgRateLimitStore ??= new Map();
 
 function parseWindow(window: `${number} ${"s" | "m"}`): number {
   const [num, unit] = window.split(" ");
